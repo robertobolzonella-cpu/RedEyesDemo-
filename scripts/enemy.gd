@@ -4,7 +4,7 @@ extends CharacterBody2D
 const BULLET_SCENE := preload("res://scenes/bullet.tscn")
 const SF := preload("res://scripts/sprite_factory.gd")
 
-@export_enum("soldier", "mech") var style: String = "soldier"
+@export var art_faces_left := false  # true se il disegno guarda a sinistra
 @export var max_hp: int = 3
 @export var speed: float = 60.0
 @export var burst: int = 1
@@ -20,16 +20,18 @@ var _fire_timer := 1.0
 var _burst_left := 0
 var _burst_timer := 0.0
 var _flash: Sprite2D
+var _anim_t := 0.0
+var _recoil := 0.0
+var _base_y := 0.0
 
-@onready var anim: AnimatedSprite2D = $Anim
+@onready var anim: Sprite2D = $Anim
 @onready var muzzle: Marker2D = $Muzzle
 
 
 func _ready() -> void:
 	add_to_group("enemies")
 	hp = max_hp
-	anim.sprite_frames = SF.enemy_frames(style)
-	anim.play("idle")
+	_base_y = anim.position.y
 	_flash = Sprite2D.new()
 	_flash.texture = SF.flash_texture()
 	_flash.visible = false
@@ -45,7 +47,7 @@ func _physics_process(delta: float) -> void:
 	if player:
 		var dx: float = player.global_position.x - global_position.x
 		_facing = 1 if dx > 0.0 else -1
-		anim.flip_h = _facing < 0
+		anim.flip_h = (_facing > 0) if art_faces_left else (_facing < 0)
 		muzzle.position.x = absf(muzzle.position.x) * _facing
 
 		if absf(dx) > fire_range * 0.6 and absf(dx) < fire_range * 2.0:
@@ -65,16 +67,20 @@ func _physics_process(delta: float) -> void:
 			_burst_timer = burst_gap
 
 	move_and_slide()
-	_update_anim()
+	_update_anim(delta)
 
 
-func _update_anim() -> void:
-	if _burst_left > 0:
-		anim.play("fire")
-	elif absf(velocity.x) > 1.0:
-		anim.play("run")
+func _update_anim(delta: float) -> void:
+	_recoil = move_toward(_recoil, 0.0, delta * 0.9)
+	var rot := -_recoil * _facing
+	if absf(velocity.x) > 1.0:
+		_anim_t += delta * 9.0
+		anim.position.y = _base_y - absf(sin(_anim_t)) * 2.5
+		rot += sin(_anim_t) * 0.04 * _facing
 	else:
-		anim.play("idle")
+		_anim_t += delta * 2.0
+		anim.position.y = _base_y + sin(_anim_t) * 1.0
+	anim.rotation = rot
 
 
 func _spawn_bullet() -> void:
@@ -86,6 +92,7 @@ func _spawn_bullet() -> void:
 	b.tint = Color8(255, 96, 80)
 	b.collision_mask = 1 | 2  # mondo + player
 	get_parent().add_child(b)
+	_recoil = 0.1
 	_flash.visible = true
 	_flash.scale = Vector2(1 if _facing > 0 else -1, 1)
 	var tw := create_tween()

@@ -1,27 +1,30 @@
-; res://scenes/enemies/enemy_soldier.tscn
+; res://scenes/enemies/enemy_mk54.tscn
 [gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/enemy.gd" id="1"]
-[ext_resource type="Texture2D" path="res://assets/sprites/enemies/trooper.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/saa/mk54/mk54.png" id="2"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
-size = Vector2(36, 68)
+size = Vector2(40, 80)
 
-[node name="EnemySoldier" type="CharacterBody2D"]
+[node name="EnemyMK54" type="CharacterBody2D"]
 collision_layer = 4
 collision_mask = 1
 script = ExtResource("1")
-max_hp = 3
-speed = 60.0
-burst = 1
-damage = 10
+art_faces_left = true
+max_hp = 6
+speed = 70.0
+burst = 2
+damage = 12
+fire_range = 340.0
+fire_interval = 2.0
 
 [node name="Anim" type="Sprite2D" parent="."]
-position = Vector2(0, -8)
+position = Vector2(0, -5)
 texture = ExtResource("2")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_1")
 
 [node name="Muzzle" type="Marker2D" parent="."]
-position = Vector2(-40, 2)
+position = Vector2(-34, 12)

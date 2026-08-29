@@ -17,16 +17,18 @@ var hp: int
 var _cooldown := 0.0
 var _facing := 1
 var _flash: Sprite2D
+var _anim_t := 0.0
+var _recoil := 0.0
+var _base_y := 0.0
 
-@onready var anim: AnimatedSprite2D = $Anim
+@onready var anim: Sprite2D = $Anim
 @onready var muzzle: Marker2D = $Muzzle
 
 
 func _ready() -> void:
 	add_to_group("player")
 	hp = max_hp
-	anim.sprite_frames = SF.player_frames()
-	anim.play("idle")
+	_base_y = anim.position.y
 	_make_camera()
 	_flash = Sprite2D.new()
 	_flash.texture = SF.flash_texture()
@@ -59,20 +61,28 @@ func _physics_process(delta: float) -> void:
 		anim.flip_h = _facing < 0
 		muzzle.position.x = absf(muzzle.position.x) * _facing
 	move_and_slide()
-	_update_anim()
+	_update_anim(delta)
 
 	_cooldown = maxf(0.0, _cooldown - delta)
 	if Input.is_action_pressed("fire") and _cooldown == 0.0:
 		_fire()
 
 
-func _update_anim() -> void:
+func _update_anim(delta: float) -> void:
+	# animazione procedurale: bob in corsa, tilt in salto, rinculo allo sparo
+	_recoil = move_toward(_recoil, 0.0, delta * 0.9)
+	var rot := -_recoil * _facing
 	if not is_on_floor():
-		anim.play("jump" if velocity.y < 0.0 else "fall")
+		rot += (-0.10 if velocity.y < 0.0 else 0.07) * _facing
+		anim.position.y = _base_y
 	elif absf(velocity.x) > 1.0:
-		anim.play("run")
+		_anim_t += delta * 13.0
+		anim.position.y = _base_y - absf(sin(_anim_t)) * 3.0
+		rot += sin(_anim_t) * 0.045 * _facing
 	else:
-		anim.play("idle")
+		_anim_t += delta * 2.5
+		anim.position.y = _base_y + sin(_anim_t) * 1.2
+	anim.rotation = rot
 
 
 func _fire() -> void:
@@ -83,6 +93,7 @@ func _fire() -> void:
 	b.damage = 1
 	b.collision_mask = 1 | 4  # mondo + nemici
 	get_parent().add_child(b)
+	_recoil = 0.12
 	_show_flash()
 
 
@@ -102,6 +113,5 @@ func take_damage(amount: int) -> void:
 	if hp == 0:
 		remove_from_group("player")
 		set_physics_process(false)
-		anim.pause()
 		anim.modulate = Color(1.0, 0.3, 0.3, 0.6)
 		died.emit()

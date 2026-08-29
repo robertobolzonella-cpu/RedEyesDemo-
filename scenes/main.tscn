@@ -1,11 +1,12 @@
 ; res://scenes/main.tscn
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/enemy_soldier.tscn" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/enemy_saa.tscn" id="3"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="4"]
 [ext_resource type="PackedScene" path="res://scenes/ui/touch.tscn" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/enemy_mk54.tscn" id="6"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
 size = Vector2(3200, 64)
@@ -36,6 +37,9 @@ position = Vector2(720, 250)
 
 [node name="EnemySAA" parent="." instance=ExtResource("3")]
 position = Vector2(1240, 240)
+
+[node name="EnemyMK54" parent="." instance=ExtResource("6")]
+position = Vector2(1800, 245)
 
 [node name="HUD" parent="." instance=ExtResource("4")]
 
