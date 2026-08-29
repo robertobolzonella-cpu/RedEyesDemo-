@@ -2,8 +2,8 @@
 # RedEyesDemo
 
 Run & gun 2D stile Metal Slug in Godot 4.x. Protagonista su esoscheletro
-SAA, placeholder grafici generati interamente via codice (nessuna risorsa
-esterna: niente PNG, niente audio — tutto `Image.create`).
+SAA, sprite pixel-art e animazioni generati interamente via codice (nessuna
+risorsa esterna: niente PNG, niente audio — tutto `Image.create`).
 
 - Viewport 640x360, stretch `canvas_items` / `expand`, landscape.
 - Renderer **Compatibility** (GL) — gira anche su iPhone/iPad (Xogot).
@@ -11,6 +11,9 @@ esterna: niente PNG, niente audio — tutto `Image.create`).
   Space/W, X/J) + controlli touch a schermo.
 - Layer fisici: `1` mondo, `2` player, `4` nemici (i proiettili sono
   Area2D su layer 0 con mask impostata da chi spara).
+- Animazioni: `AnimatedSprite2D` con `SpriteFrames` procedurali (idle,
+  corsa, salto/caduta, fuoco con rinculo), flash di sparo al muzzle e
+  proiettili traccianti (gialli il player, rossi i nemici).
 
 ## Struttura dei file
 
@@ -22,7 +25,8 @@ esterna: niente PNG, niente audio — tutto `Image.create`).
 | `scenes/bullet.tscn` + `scripts/bullet.gd` | Proiettile condiviso player/nemici |
 | `scenes/enemies/enemy_soldier.tscn` | Fante: hp 3, burst 1 |
 | `scenes/enemies/enemy_saa.tscn` | SAA Barume: hp 10, burst 3 |
-| `scripts/enemy.gd` | Logica nemici (`@export hp/speed/burst`) |
+| `scripts/enemy.gd` | Logica nemici (`@export hp/speed/burst` + `style`) |
+| `scripts/sprite_factory.gd` | Sprite pixel-art e animazioni generati via `Image.create` |
 | `scenes/ui/hud.tscn` + `scripts/hud.gd` | Barra HP + messaggi |
 | `scenes/ui/touch.tscn` + `scripts/touch.gd` | 4 TouchScreenButton |
 
@@ -38,11 +42,12 @@ che li usano, per ultima `main.tscn` che istanzia tutto:
 3. Nel FileSystem crea le cartelle: `scripts`, `scenes`,
    `scenes/enemies`, `scenes/ui`.
 4. Crea e incolla gli script (Script → New… → vuoto → incolla):
-   1. `scripts/bullet.gd`
-   2. `scripts/player.gd`
-   3. `scripts/enemy.gd`
-   4. `scripts/hud.gd`
-   5. `scripts/touch.gd`
+   1. `scripts/sprite_factory.gd`
+   2. `scripts/bullet.gd`
+   3. `scripts/player.gd`
+   4. `scripts/enemy.gd`
+   5. `scripts/hud.gd`
+   6. `scripts/touch.gd`
 5. Crea e incolla le scene come file di testo `.tscn` (in Xogot: crea il
    file col nome giusto e incolla il contenuto):
    1. `scenes/bullet.tscn`

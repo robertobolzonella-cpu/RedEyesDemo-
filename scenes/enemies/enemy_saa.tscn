@@ -10,16 +10,15 @@ size = Vector2(56, 92)
 collision_layer = 4
 collision_mask = 1
 script = ExtResource("1")
+style = "mech"
 max_hp = 10
 speed = 40.0
 burst = 3
 damage = 12
 fire_range = 380.0
 fire_interval = 2.2
-sprite_size = Vector2i(64, 96)
-sprite_color = Color(0.5, 0.14, 0.14, 1)
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Anim" type="AnimatedSprite2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_1")

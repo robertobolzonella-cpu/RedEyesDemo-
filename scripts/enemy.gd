@@ -2,7 +2,9 @@
 extends CharacterBody2D
 
 const BULLET_SCENE := preload("res://scenes/bullet.tscn")
+const SF := preload("res://scripts/sprite_factory.gd")
 
+@export_enum("soldier", "mech") var style: String = "soldier"
 @export var max_hp: int = 3
 @export var speed: float = 60.0
 @export var burst: int = 1
@@ -11,26 +13,27 @@ const BULLET_SCENE := preload("res://scenes/bullet.tscn")
 @export var fire_interval: float = 1.8
 @export var burst_gap: float = 0.12
 @export var gravity: float = 1500.0
-@export var sprite_size: Vector2i = Vector2i(40, 72)
-@export var sprite_color: Color = Color(0.35, 0.45, 0.3)
 
 var hp: int
 var _facing := -1
 var _fire_timer := 1.0
 var _burst_left := 0
 var _burst_timer := 0.0
+var _flash: Sprite2D
 
-@onready var sprite: Sprite2D = $Sprite2D
+@onready var anim: AnimatedSprite2D = $Anim
 @onready var muzzle: Marker2D = $Muzzle
 
 
 func _ready() -> void:
 	add_to_group("enemies")
 	hp = max_hp
-	var img := Image.create(sprite_size.x, sprite_size.y, false, Image.FORMAT_RGBA8)
-	img.fill(sprite_color)
-	img.fill_rect(Rect2i(4, 8, sprite_size.x - 8, 6), Color(0.9, 0.15, 0.15))
-	sprite.texture = ImageTexture.create_from_image(img)
+	anim.sprite_frames = SF.enemy_frames(style)
+	anim.play("idle")
+	_flash = Sprite2D.new()
+	_flash.texture = SF.flash_texture()
+	_flash.visible = false
+	muzzle.add_child(_flash)
 
 
 func _physics_process(delta: float) -> void:
@@ -42,7 +45,7 @@ func _physics_process(delta: float) -> void:
 	if player:
 		var dx: float = player.global_position.x - global_position.x
 		_facing = 1 if dx > 0.0 else -1
-		sprite.flip_h = _facing < 0
+		anim.flip_h = _facing < 0
 		muzzle.position.x = absf(muzzle.position.x) * _facing
 
 		if absf(dx) > fire_range * 0.6 and absf(dx) < fire_range * 2.0:
@@ -62,6 +65,16 @@ func _physics_process(delta: float) -> void:
 			_burst_timer = burst_gap
 
 	move_and_slide()
+	_update_anim()
+
+
+func _update_anim() -> void:
+	if _burst_left > 0:
+		anim.play("fire")
+	elif absf(velocity.x) > 1.0:
+		anim.play("run")
+	else:
+		anim.play("idle")
 
 
 func _spawn_bullet() -> void:
@@ -70,8 +83,14 @@ func _spawn_bullet() -> void:
 	b.direction = Vector2(_facing, 0)
 	b.speed = 320.0
 	b.damage = damage
+	b.tint = Color8(255, 96, 80)
 	b.collision_mask = 1 | 2  # mondo + player
 	get_parent().add_child(b)
+	_flash.visible = true
+	_flash.scale = Vector2(1 if _facing > 0 else -1, 1)
+	var tw := create_tween()
+	tw.tween_interval(0.05)
+	tw.tween_callback(func() -> void: _flash.visible = false)
 
 
 func take_damage(amount: int) -> void:
