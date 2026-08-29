@@ -19,7 +19,7 @@ fire_range = 380.0
 fire_interval = 2.2
 
 [node name="Anim" type="Sprite2D" parent="."]
-position = Vector2(0, -10)
+position = Vector2(0, -4)
 texture = ExtResource("2")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
