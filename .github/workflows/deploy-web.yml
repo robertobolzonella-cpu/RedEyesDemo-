@@ -27,6 +27,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Nel container Actions HOME diventa /github/home, ma l'immagine
+      # godot-ci installa i template in /root: copiamo i template web
+      # dove Godot li cerca davvero.
+      - name: Setup export templates
+        run: |
+          SRC=/root/.local/share/godot/export_templates/4.3.stable
+          DST="$HOME/.local/share/godot/export_templates/4.3.stable"
+          ls "$SRC"
+          mkdir -p "$DST"
+          cp "$SRC"/web_nothreads_release.zip "$SRC"/web_nothreads_debug.zip \
+             "$SRC"/web_release.zip "$SRC"/web_debug.zip "$DST/"
+
       - name: Import assets
         run: godot --headless --path . --import
 
