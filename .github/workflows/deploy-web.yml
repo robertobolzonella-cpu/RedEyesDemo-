@@ -1,0 +1,51 @@
+# .github/workflows/deploy-web.yml
+# A ogni push (main o branch di lavoro attuale) ri-esporta la build web
+# e la pubblica sul branch gh-pages. Container: Godot 4.3 headless con
+# export template preinstallati.
+name: Deploy Web Demo
+
+on:
+  push:
+    branches:
+      - main
+      - claude/redeyesdemo-project-setup-z2unx0
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: deploy-web
+  cancel-in-progress: true
+
+jobs:
+  export-web:
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Import assets
+        run: godot --headless --path . --import
+
+      - name: Export Web
+        run: |
+          mkdir -p export/web
+          godot --headless --path . --export-release "Web" export/web/index.html
+          test -f export/web/index.wasm
+          ls -la export/web
+
+      - name: Deploy to gh-pages
+        run: |
+          cd export/web
+          touch .nojekyll
+          git init -b gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Deploy web build from ${GITHUB_SHA}"
+          git push --force "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" gh-pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

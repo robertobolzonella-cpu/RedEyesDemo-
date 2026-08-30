@@ -91,6 +91,14 @@ e corre a velocità doppia, colpo da mischia con cooldown).
 Nota: la prima riga di ogni `.tscn` è un commento `; res://...` col path —
 promemoria di dove incollarlo.
 
+## Demo web e CI
+
+La demo gira nel browser: build HTML5 sul branch `gh-pages`, servita da
+GitHub Pages (repo pubblico richiesto). La GitHub Action
+`.github/workflows/deploy-web.yml` ri-esporta e aggiorna `gh-pages` a
+ogni push su `main` o sul branch di lavoro — il link resta allineato al
+codice. Kit per i tester in `TESTER_KIT.md`.
+
 ## Cartelle asset
 
 Le sottocartelle vuote di `assets/` (audio, fx, ui, background, `saa/cobra`,
