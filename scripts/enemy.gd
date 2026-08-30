@@ -13,12 +13,18 @@ const SF := preload("res://scripts/sprite_factory.gd")
 @export var fire_interval: float = 1.8
 @export var burst_gap: float = 0.12
 @export var gravity: float = 1500.0
+@export var melee := false  # charger: sotto melee_range smette di sparare e carica
+@export var melee_range := 200.0
+@export var melee_reach := 52.0
+@export var melee_damage := 15
+@export var melee_cooldown := 0.8
 
 var hp: int
 var _facing := -1
 var _fire_timer := 1.0
 var _burst_left := 0
 var _burst_timer := 0.0
+var _melee_timer := 0.0
 var _flash: Sprite2D
 var _anim_t := 0.0
 var _recoil := 0.0
@@ -50,14 +56,26 @@ func _physics_process(delta: float) -> void:
 		anim.flip_h = (_facing > 0) if art_faces_left else (_facing < 0)
 		muzzle.position.x = absf(muzzle.position.x) * _facing
 
-		if absf(dx) > fire_range * 0.6 and absf(dx) < fire_range * 2.0:
-			velocity.x = _facing * speed
+		if melee and absf(dx) < melee_range:
+			# carica: niente spari, corsa a velocità doppia verso il player
+			_burst_left = 0
+			velocity.x = _facing * speed * 2.0
+			_melee_timer -= delta
+			var dy: float = absf(player.global_position.y - global_position.y)
+			if absf(dx) < melee_reach and dy < 70.0 and _melee_timer <= 0.0:
+				_melee_timer = melee_cooldown
+				_recoil = 0.15  # affondo visivo
+				if player.has_method("take_damage"):
+					player.take_damage(melee_damage)
+		else:
+			if absf(dx) > fire_range * 0.6 and absf(dx) < fire_range * 2.0:
+				velocity.x = _facing * speed
 
-		_fire_timer -= delta
-		if absf(dx) <= fire_range and _fire_timer <= 0.0 and _burst_left == 0:
-			_fire_timer = fire_interval
-			_burst_left = burst
-			_burst_timer = 0.0
+			_fire_timer -= delta
+			if absf(dx) <= fire_range and _fire_timer <= 0.0 and _burst_left == 0:
+				_fire_timer = fire_interval
+				_burst_left = burst
+				_burst_timer = 0.0
 
 	if _burst_left > 0:
 		_burst_timer -= delta

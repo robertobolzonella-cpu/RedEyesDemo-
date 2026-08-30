@@ -7,6 +7,7 @@ signal died
 const BULLET_SCENE := preload("res://scenes/bullet.tscn")
 const SF := preload("res://scripts/sprite_factory.gd")
 
+@export var art_faces_left := true  # lo sprite Mk-54 guarda a sinistra
 @export var speed: float = 240.0
 @export var jump_velocity: float = -560.0
 @export var gravity: float = 1500.0
@@ -29,6 +30,7 @@ func _ready() -> void:
 	add_to_group("player")
 	hp = max_hp
 	_base_y = anim.position.y
+	anim.flip_h = (_facing > 0) if art_faces_left else (_facing < 0)
 	_make_camera()
 	_flash = Sprite2D.new()
 	_flash.texture = SF.flash_texture()
@@ -58,7 +60,7 @@ func _physics_process(delta: float) -> void:
 	velocity.x = dir * speed
 	if dir != 0.0:
 		_facing = 1 if dir > 0.0 else -1
-		anim.flip_h = _facing < 0
+		anim.flip_h = (_facing > 0) if art_faces_left else (_facing < 0)
 		muzzle.position.x = absf(muzzle.position.x) * _facing
 	move_and_slide()
 	_update_anim(delta)
@@ -103,6 +105,13 @@ func _show_flash() -> void:
 	var tw := create_tween()
 	tw.tween_interval(0.05)
 	tw.tween_callback(func() -> void: _flash.visible = false)
+
+
+func heal(amount: int) -> void:
+	if hp <= 0:
+		return
+	hp = mini(max_hp, hp + amount)
+	hp_changed.emit(hp, max_hp)
 
 
 func take_damage(amount: int) -> void:

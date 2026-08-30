@@ -3,7 +3,7 @@ config_version=5
 [application]
 
 config/name="RedEyesDemo"
-run/main_scene="res://scenes/main.tscn"
+run/main_scene="res://scenes/levels/level_01.tscn"
 config/features=PackedStringArray("4.3", "GL Compatibility")
 
 [display]
